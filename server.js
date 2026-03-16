@@ -26,9 +26,11 @@ async function parseCommand(userInput) {
 Command: "${userInput}"
 Respond with this exact format:
 {
-  "action": "send" or "balance",
+  "action": "send" or "balance" or "schedule",
   "to": "wallet address or null",
-  "amount": "number as string or null"
+  "amount": "number as string or null",
+  "interval": "daily" or "hourly" or null,
+  "times": "number of times as string or null"
 }`
     }]
   });
@@ -49,6 +51,25 @@ async function executeCommand(userInput) {
     const tx = await token.transfer(parsed.to, ethers.parseUnits(parsed.amount, decimals));
     await tx.wait();
     return { message: `✅ Sent ${parsed.amount} AlphaUSD!<br>🔗 Hash: ${tx.hash.slice(0,20)}...` };
+  }
+  else if (parsed.action === "schedule" && parsed.to && parsed.amount) {
+    const times = parseInt(parsed.times) || 3;
+    const intervalMs = 10000; // demo için 10 saniye
+    let count = 0;
+
+    const interval = setInterval(async () => {
+      if (count >= times) {
+        clearInterval(interval);
+        return;
+      }
+      count++;
+      const decimals = await token.decimals();
+      const tx = await token.transfer(parsed.to, ethers.parseUnits(parsed.amount, decimals));
+      await tx.wait();
+      console.log(`✅ Scheduled payment ${count}/${times} - Hash: ${tx.hash}`);
+    }, intervalMs);
+
+    return { message: `⏰ Scheduled! ${parsed.amount} AlphaUSD × ${times} times<br>📤 Sending to ${parsed.to.slice(0,10)}...<br>⏱ Every 10 seconds` };
   }
   else {
     return { error: "Could not understand command" };
@@ -79,4 +100,4 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(3000, () => {
   console.log("🚀 AutoPay Agent running on http://localhost:3000");
-});"" 
+});
