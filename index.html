@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AutoPay Agent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 { font-size: 2rem; margin-bottom: 8px; }
+    p { color: #888; margin-bottom: 40px; font-size: 0.9rem; }
+    .chat {
+      width: 100%;
+      max-width: 600px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 20px;
+      height: 400px;
+      overflow-y: auto;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .msg {
+      padding: 10px 14px;
+      border-radius: 8px;
+      max-width: 85%;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    .msg.user { background: #1a1a2e; align-self: flex-end; color: #a78bfa; }
+    .msg.agent { background: #0f2027; align-self: flex-start; color: #34d399; }
+    .msg.error { background: #2d1515; align-self: flex-start; color: #f87171; }
+    .input-row {
+      display: flex;
+      width: 100%;
+      max-width: 600px;
+      gap: 10px;
+    }
+    input {
+      flex: 1;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    input:focus { border-color: #a78bfa; }
+    button {
+      background: #a78bfa;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: 'Courier New', monospace;
+    }
+    button:hover { background: #c4b5fd; }
+    button:disabled { background: #333; color: #666; cursor: not-allowed; }
+    .balance { color: #888; font-size: 0.75rem; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>🤖 AutoPay Agent</h1>
+  <p>Natural language payments on Tempo blockchain</p>
+
+  <div class="chat" id="chat">
+    <div class="msg agent">👋 Merhaba! Bana ödeme komutları verebilirsin.<br><br>
+      Örnek:<br>
+      • "What is my balance?"<br>
+      • "Send 5 AlphaUSD to 0x1234..."
+    </div>
+  </div>
+
+  <div class="input-row">
+    <input type="text" id="input" placeholder="Send 10 AlphaUSD to 0x..." />
+    <button id="btn" onclick="sendCommand()">Send →</button>
+  </div>
+  <div class="balance" id="balance"></div>
+
+  <script>
+    const input = document.getElementById('input');
+    const btn = document.getElementById('btn');
+    const chat = document.getElementById('chat');
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendCommand();
+    });
+
+    function addMsg(text, type) {
+      const div = document.createElement('div');
+      div.className = `msg ${type}`;
+      div.innerHTML = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendCommand() {
+      const cmd = input.value.trim();
+      if (!cmd) return;
+
+      input.value = '';
+      btn.disabled = true;
+      addMsg(cmd, 'user');
+      addMsg('⏳ Processing...', 'agent');
+
+      try {
+        const res = await fetch('/command', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: cmd })
+        });
+        const data = await res.json();
+        chat.lastChild.remove();
+
+        if (data.error) {
+          addMsg('❌ ' + data.error, 'error');
+        } else {
+          addMsg(data.message, 'agent');
+        }
+      } catch(e) {
+        chat.lastChild.remove();
+        addMsg('❌ Connection error', 'error');
+      }
+
+      btn.disabled = false;
+      input.focus();
+    }
+  </script>
+</body>
+</html>"" 
