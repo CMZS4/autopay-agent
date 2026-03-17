@@ -4,94 +4,187 @@
   <meta charset="UTF-8">
   <title>AutoPay Agent</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
-      background: #0a0a0a;
+      background: #000;
       color: #fff;
-      font-family: 'Courier New', monospace;
+      font-family: 'Space Mono', monospace;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
       padding: 20px;
     }
-    h1 { font-size: 2rem; margin-bottom: 8px; }
-    p { color: #888; margin-bottom: 40px; font-size: 0.9rem; }
-    .chat {
-      width: 100%;
-      max-width: 600px;
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .header h1 span { color: #a78bfa; }
+
+    .header p {
+      color: #444;
+      font-size: 0.75rem;
+      margin-top: 6px;
+    }
+
+    .badge {
+      display: inline-block;
       background: #111;
       border: 1px solid #222;
-      border-radius: 12px;
-      padding: 20px;
-      height: 400px;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.7rem;
+      color: #34d399;
+      margin-top: 10px;
+    }
+
+    .chat {
+      width: 100%;
+      max-width: 620px;
+      background: #0a0a0a;
+      border: 1px solid #1a1a1a;
+      border-radius: 16px;
+      padding: 24px;
+      height: 420px;
       overflow-y: auto;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
+
+    .chat::-webkit-scrollbar { width: 4px; }
+    .chat::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+
     .msg {
       padding: 10px 14px;
-      border-radius: 8px;
-      max-width: 85%;
-      font-size: 0.85rem;
-      line-height: 1.5;
+      border-radius: 10px;
+      max-width: 88%;
+      font-size: 0.8rem;
+      line-height: 1.6;
     }
-    .msg.user { background: #1a1a2e; align-self: flex-end; color: #a78bfa; }
-    .msg.agent { background: #0f2027; align-self: flex-start; color: #34d399; }
-    .msg.error { background: #2d1515; align-self: flex-start; color: #f87171; }
+
+    .msg.user {
+      background: #1a1a2e;
+      align-self: flex-end;
+      color: #a78bfa;
+      border: 1px solid #2d2d4e;
+    }
+
+    .msg.agent {
+      background: #0d1f17;
+      align-self: flex-start;
+      color: #34d399;
+      border: 1px solid #1a3329;
+    }
+
+    .msg.error {
+      background: #1f0d0d;
+      align-self: flex-start;
+      color: #f87171;
+      border: 1px solid #3d1a1a;
+    }
+
+    .suggestions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: 620px;
+      margin-bottom: 10px;
+    }
+
+    .suggestion {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.7rem;
+      color: #666;
+      cursor: pointer;
+      font-family: 'Space Mono', monospace;
+      transition: all 0.2s;
+    }
+
+    .suggestion:hover { border-color: #a78bfa; color: #a78bfa; }
+
     .input-row {
       display: flex;
       width: 100%;
-      max-width: 600px;
+      max-width: 620px;
       gap: 10px;
     }
+
     input {
       flex: 1;
-      background: #111;
-      border: 1px solid #333;
-      border-radius: 8px;
+      background: #0a0a0a;
+      border: 1px solid #1a1a1a;
+      border-radius: 10px;
       padding: 12px 16px;
       color: #fff;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
       outline: none;
+      transition: border 0.2s;
     }
+
     input:focus { border-color: #a78bfa; }
+
     button {
       background: #a78bfa;
       color: #000;
       border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
-      font-weight: bold;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-weight: 700;
       cursor: pointer;
-      font-family: 'Courier New', monospace;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      transition: background 0.2s;
     }
+
     button:hover { background: #c4b5fd; }
-    button:disabled { background: #333; color: #666; cursor: not-allowed; }
-    .balance { color: #888; font-size: 0.75rem; margin-top: 10px; }
+    button:disabled { background: #1a1a1a; color: #333; cursor: not-allowed; }
   </style>
 </head>
 <body>
-  <h1>🤖 AutoPay Agent</h1>
-  <p>Natural language payments on Tempo blockchain</p>
+  <div class="header">
+    <h1>🤖 Auto<span>Pay</span> Agent</h1>
+    <p>Natural language payments on Tempo blockchain</p>
+    <span class="badge">● Tempo Testnet Live</span>
+  </div>
 
   <div class="chat" id="chat">
-    <div class="msg agent">👋 Merhaba! Bana ödeme komutları verebilirsin.<br><br>
-      Örnek:<br>
+    <div class="msg agent">
+      👋 Hey! I can execute payments on Tempo for you.<br><br>
+      Try:<br>
       • "What is my balance?"<br>
-      • "Send 5 AlphaUSD to 0x1234..."
+      • "Send 5 AlphaUSD to 0x..."<br>
+      • "Schedule 3 payments of 1 AlphaUSD to 0x..."
     </div>
   </div>
 
+  <div class="suggestions">
+    <div class="suggestion" onclick="fillInput('What is my balance?')">💰 Check balance</div>
+    <div class="suggestion" onclick="fillInput('Send 5 AlphaUSD to 0x5939a7810298a18F58a517151FB265E239DE63cA')">📤 Send payment</div>
+    <div class="suggestion" onclick="fillInput('Schedule 3 payments of 1 AlphaUSD to 0x5939a7810298a18F58a517151FB265E239DE63cA')">⏰ Schedule payments</div>
+  </div>
+
   <div class="input-row">
-    <input type="text" id="input" placeholder="Send 10 AlphaUSD to 0x..." />
+    <input type="text" id="input" placeholder="Type a payment command..." />
     <button id="btn" onclick="sendCommand()">Send →</button>
   </div>
-  <div class="balance" id="balance"></div>
 
   <script>
     const input = document.getElementById('input');
@@ -101,6 +194,11 @@
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') sendCommand();
     });
+
+    function fillInput(text) {
+      input.value = text;
+      input.focus();
+    }
 
     function addMsg(text, type) {
       const div = document.createElement('div');
@@ -143,4 +241,4 @@
     }
   </script>
 </body>
-</html>"" 
+</html>
